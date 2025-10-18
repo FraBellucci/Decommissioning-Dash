@@ -162,7 +162,7 @@
             <h1>⚡ Decommissioning Dash</h1>
             <div class="stats">
                 <span>⏱️ Tempo: <span id="time">40</span>s</span>
-                <span>🎯 Punteggio: <span id="score">0</span></span>
+                <span>💰 Punteggio: <span id="score">0</span></span>
             </div>
         </header>
 
@@ -171,10 +171,10 @@
         </div>
 
         <div id="start-screen" class="overlay">
-            <h2>🎮 Benvenuto in Decommissioning Dash!</h2>
-            <p style="font-size: 1.125rem;">Il tuo obiettivo è smantellare le vecchie centrali in rame 🏭.</p>
-            <p style="font-size: 1rem;">Evita di cliccare sulle centrali in fibra 🏢, ti costeranno energia!</p>
-            <p style="font-size: 1rem;">Gli impianti solari ☀️ ed eolici 💨 ti daranno energia bonus!</p>
+            <h2>🎯 Benvenuto in Decommissioning Dash!</h2>
+            <p style="font-size: 1.125rem;">Il tuo obiettivo è smantellare le vecchie centrali in rame 🟠.</p>
+            <p style="font-size: 1rem;">Evita di cliccare sulle centrali in fibra ⚙️, ti costeranno energia!</p>
+            <p style="font-size: 1rem;">Gli impianti solari 🌞 ed eolici 🌬️ ti daranno energia bonus!</p>
             <p style="font-size: 0.875rem; color: #d1d5db; margin-bottom: 1.5rem;">Hai 40 secondi per ottenere il punteggio più alto possibile!</p>
             <button class="btn" onclick="startGame()">🚀 Inizia il gioco</button>
         </div>
@@ -185,7 +185,7 @@
             <h2>🏁 Fine del Gioco</h2>
             <p style="font-size: 1.125rem; margin-bottom: 0.5rem;">Punteggio finale: <span id="final-score">0</span></p>
             <p id="feedback" style="font-size: 0.875rem; margin-bottom: 1.5rem;"></p>
-            <button class="btn" onclick="restartGame()">🔄 Rigioca</button>
+            <button class="btn" onclick="restartGame()">🔁 Rigioca</button>
         </div>
     </div>
 
@@ -200,10 +200,10 @@
         let plantIdCounter = 0;
 
         const plantData = {
-            rame: { emoji: '🏭', label: 'Centrale in rame', points: 10, energyCost: -5 },
-            fibra: { emoji: '🏢', label: 'Centrale fibra', points: -10, energyCost: -10 },
-            solare: { emoji: '☀️', label: 'Impianto solare', points: 5, energyCost: 5 },
-            eolica: { emoji: '💨', label: 'Impianto eolico', points: 5, energyCost: 5 }
+            rame: { emoji: '🟠', label: 'Centrale in rame', points: 10, energyCost: -5 },
+            fibra: { emoji: '⚙️', label: 'Centrale fibra', points: -10, energyCost: -10 },
+            solare: { emoji: '🌞', label: 'Impianto solare', points: 5, energyCost: 5 },
+            eolica: { emoji: '🌬️', label: 'Impianto eolico', points: 5, energyCost: 5 }
         };
 
         function startGame() {
