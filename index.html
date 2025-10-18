@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Decommissioning Dash</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #f1f5f9, #d1fae5);
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(22, 101, 52, 0.9);
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        #energy-bar-container {
+            position: absolute;
+            top: 4rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 75%;
+            height: 1.25rem;
+            background: #d1d5db;
+            border-radius: 9999px;
+            overflow: hidden;
+            border: 2px solid #9ca3af;
+        }
+
+        #energy-bar {
+            height: 100%;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .energy-high { background: #22c55e; }
+        .energy-medium { background: #facc15; }
+        .energy-low { background: #ef4444; }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .overlay h2 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .overlay p {
+            margin-bottom: 0.75rem;
+        }
+
+        .btn {
+            background: #22c55e;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: #16a34a;
+        }
+
+        #game-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .plant {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            animation: float 3s ease-in-out infinite;
+            transition: transform 0.2s;
+        }
+
+        .plant:hover {
+            transform: scale(1.1);
+        }
+
+        .plant-emoji {
+            font-size: 3rem;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        .plant-label {
+            margin-top: 0.25rem;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>⚡ Decommissioning Dash</h1>
+            <div class="stats">
+                <span>⏱️ Tempo: <span id="time">40</span>s</span>
+                <span>🎯 Punteggio: <span id="score">0</span></span>
+            </div>
+        </header>
+
+        <div id="energy-bar-container">
+            <div id="energy-bar" class="energy-high" style="width: 100%"></div>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <h2>🎮 Benvenuto in Decommissioning Dash!</h2>
+            <p style="font-size: 1.125rem;">Il tuo obiettivo è smantellare le vecchie centrali in rame 🏭.</p>
+            <p style="font-size: 1rem;">Evita di cliccare sulle centrali in fibra 🏢, ti costeranno energia!</p>
+            <p style="font-size: 1rem;">Gli impianti solari ☀️ ed eolici 💨 ti daranno energia bonus!</p>
+            <p style="font-size: 0.875rem; color: #d1d5db; margin-bottom: 1.5rem;">Hai 40 secondi per ottenere il punteggio più alto possibile!</p>
+            <button class="btn" onclick="startGame()">🚀 Inizia il gioco</button>
+        </div>
+
+        <div id="game-area" class="hidden"></div>
+
+        <div id="game-over-screen" class="overlay hidden">
+            <h2>🏁 Fine del Gioco</h2>
+            <p style="font-size: 1.125rem; margin-bottom: 0.5rem;">Punteggio finale: <span id="final-score">0</span></p>
+            <p id="feedback" style="font-size: 0.875rem; margin-bottom: 1.5rem;"></p>
+            <button class="btn" onclick="restartGame()">🔄 Rigioca</button>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 40;
+        let energy = 100;
+        let score = 0;
+        let gameStarted = false;
+        let gameOver = false;
+        let spawnInterval;
+        let timerInterval;
+        let plantIdCounter = 0;
+
+        const plantData = {
+            rame: { emoji: '🏭', label: 'Centrale in rame', points: 10, energyCost: -5 },
+            fibra: { emoji: '🏢', label: 'Centrale fibra', points: -10, energyCost: -10 },
+            solare: { emoji: '☀️', label: 'Impianto solare', points: 5, energyCost: 5 },
+            eolica: { emoji: '💨', label: 'Impianto eolico', points: 5, energyCost: 5 }
+        };
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            gameStarted = true;
+            gameOver = false;
+            
+            spawnInterval = setInterval(spawnPlant, 700);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function spawnPlant() {
+            if (gameOver) return;
+
+            const types = ['rame', 'fibra', 'solare', 'eolica'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const plant = plantData[type];
+
+            const plantEl = document.createElement('div');
+            plantEl.className = 'plant';
+            plantEl.dataset.type = type;
+            plantEl.dataset.id = plantIdCounter++;
+            plantEl.style.left = (Math.random() * 80 + 10) + '%';
+            plantEl.style.top = (Math.random() * 50 + 20) + '%';
+            
+            plantEl.innerHTML = `
+                <div class="plant-emoji">${plant.emoji}</div>
+                <div class="plant-label">${plant.label}</div>
+            `;
+            
+            plantEl.onclick = () => handlePlantClick(plantEl, type);
+            document.getElementById('game-area').appendChild(plantEl);
+        }
+
+        function handlePlantClick(plantEl, type) {
+            if (gameOver) return;
+
+            plantEl.remove();
+            const plant = plantData[type];
+
+            score += plant.points;
+            energy = Math.max(0, Math.min(100, energy + plant.energyCost));
+
+            updateUI();
+
+            if (energy <= 0) {
+                endGame();
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time').textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('energy-bar').style.width = energy + '%';
+            
+            const energyBar = document.getElementById('energy-bar');
+            energyBar.className = '';
+            if (energy > 60) {
+                energyBar.classList.add('energy-high');
+            } else if (energy > 30) {
+                energyBar.classList.add('energy-medium');
+            } else {
+                energyBar.classList.add('energy-low');
+            }
+        }
+
+        function endGame() {
+            gameOver = true;
+            clearInterval(spawnInterval);
+            clearInterval(timerInterval);
+
+            document.getElementById('final-score').textContent = score;
+            const feedback = score >= 120 
+                ? 'Incredibile! Hai guidato la transizione verde in modo perfetto! 🌟'
+                : 'Hai smantellato alcune centrali, ma puoi ottimizzare di più! 💪';
+            document.getElementById('feedback').textContent = feedback;
+
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+
+        function restartGame() {
+            // Reset variabili
+            timeLeft = 40;
+            energy = 100;
+            score = 0;
+            gameStarted = false;
+            gameOver = false;
+            plantIdCounter = 0;
+
+            // Pulisci l'area di gioco
+            document.getElementById('game-area').innerHTML = '';
+
+            // Reset UI
+            document.getElementById('time').textContent = timeLeft;
+            document.getElementById('score').textContent = score;
+            updateUI();
+
+            // Nascondi game over, mostra start screen
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('game-area').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
